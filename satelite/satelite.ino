@@ -16,56 +16,18 @@ double Po=1013.25;
 // pódese poñer outra?
 #define RF69_FREQ 434.0
 
-
-//definicións de pines para as distintas placas da familia Feather
-#if defined (__AVR_ATmega32U4__) // Feather 32u4 w/Radio
-  #define RFM69_CS      8
-  #define RFM69_INT     7
-  #define RFM69_RST     4
-  #define LED           13
-#endif
-
-//Esta definición será a que use no noso caso
-#if defined(ADAFRUIT_FEATHER_M0) // Feather M0 w/Radio
-  #define RFM69_CS      8
-  #define RFM69_INT     3
-  #define RFM69_RST     4
-  #define LED           13
-#endif
-
-#if defined (__AVR_ATmega328P__)  // Feather 328P w/wing
-  #define RFM69_INT     3  // 
-  #define RFM69_CS      4  //
-  #define RFM69_RST     2  // "A"
-  #define LED           13
-#endif
-
-#if defined(ESP8266)    // ESP8266 feather w/wing
-  #define RFM69_CS      2    // "E"
-  #define RFM69_IRQ     15   // "B"
-  #define RFM69_RST     16   // "D"
-  #define LED           0
-#endif
-
-#if defined(ESP32)    // ESP32 feather w/wing
-  #define RFM69_RST     13   // same as LED
-  #define RFM69_CS      33   // "B"
-  #define RFM69_INT     27   // "A"
-  #define LED           13
-#endif
-
-
+#define RFM69_CS      8
+#define RFM69_INT     3
+#define RFM69_RST     4
+#define LED           13
 
 // cousas da librería de radio
 RH_RF69 rf69(RFM69_CS, RFM69_INT);
-
-//int16_t packetnum = 0;  // packet counter, we increment per xmission, non fai falla
 
 void setup() 
 {
   Serial.begin(115200);
   
-
 //codigo de inicio do BMP
 if (bmp180.begin())
     Serial.println("BMP180 iniciado correctamente");
@@ -75,7 +37,6 @@ if (bmp180.begin())
     while(1); // bucle infinito /// é a mellor solución?
   }
   double status;
-  //double T,P;
 
   status = bmp180.startTemperature();//Inicio de lectura de temperatura: tempo de medida en milisegundos
   Serial.println(status);
@@ -165,13 +126,17 @@ void loop() {
 ////código da emisión de paquetes, aquí está o miolo
 ///////
 // creamos o array de 20 caracteres radiopacket, é o mesmo que un string
-  char radiopacket[50];
-//esta instrución formatea o string radiopacket co texto entre aspas e os %d substituídos polas variables T e P, que hai que formatear a int
-//porque este procesador non recoñece ben os flotantes para esta instrución
-  int Tr = T*1000.0;
-  int Pr = P*1000.0;
-  
-  sprintf(radiopacket,"temp. %i, pres. %i",Tr,Pr); 
+  char radiopacket[20];
+
+if ( (int)T > 25){
+  //se a temperatura sube de 25, facemos que radiopacket sexa tempAlarm
+  sprintf(radiopacket, "tempAlarm");
+}
+else {
+  //se está por baixo de 25, deixamos que sega a emitir os datos
+  sprintf(radiopacket,"temp. %d, pres. %d",(int)T,(int)P); 
+}
+
 //mensaxe de emisión 
   Serial.print("Sending "); Serial.println(radiopacket);
 
@@ -182,15 +147,20 @@ void loop() {
   // Now wait for a reply
   uint8_t buf[RH_RF69_MAX_MESSAGE_LEN];
   uint8_t len = sizeof(buf);
-///////
-/// daquí para abaixo non nos importa moito, non o necesitamos porque isto vai ir no satélite
-/// e non imos ler mensaxes por serie nin ver o blink
-///////
+
+// esperamos por unha mensaxe de volta de terra
   if (rf69.waitAvailableTimeout(500))  { 
     // Should be a reply message for us now   
     if (rf69.recv(buf, &len)) {
+      buf[len] = '\0';
       Serial.print("Got a reply: ");
       Serial.println((char*)buf);
+
+      if (strstr((char *)buf, "abrir")) {
+        
+        Serial.println("abrindo porta");
+                 
+      }
       Blink(LED, 50, 3); //blink LED 3 times, 50ms between blinks
     } else {
       Serial.println("Receive failed");

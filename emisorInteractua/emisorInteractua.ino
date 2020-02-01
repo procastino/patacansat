@@ -165,13 +165,16 @@ void loop() {
 ////código da emisión de paquetes, aquí está o miolo
 ///////
 // creamos o array de 20 caracteres radiopacket, é o mesmo que un string
-  char radiopacket[50];
+  char radiopacket[20];
 //esta instrución formatea o string radiopacket co texto entre aspas e os %d substituídos polas variables T e P, que hai que formatear a int
 //porque este procesador non recoñece ben os flotantes para esta instrución
-  int Tr = T*1000.0;
-  int Pr = P*1000.0;
-  
-  sprintf(radiopacket,"temp. %i, pres. %i",Tr,Pr); 
+Serial.println((int)T);
+if ( (int)T > 25){
+  sprintf(radiopacket, "tempAlarm");
+}
+else {
+  sprintf(radiopacket,"temp. %d, pres. %d",(int)T,(int)P); 
+}
 //mensaxe de emisión 
   Serial.print("Sending "); Serial.println(radiopacket);
 
@@ -189,8 +192,17 @@ void loop() {
   if (rf69.waitAvailableTimeout(500))  { 
     // Should be a reply message for us now   
     if (rf69.recv(buf, &len)) {
+      buf[len] = '\0';
       Serial.print("Got a reply: ");
       Serial.println((char*)buf);
+
+      if (strstr((char *)buf, "abrir")) {
+        
+        Serial.println("abrindo porta");
+        
+     // }
+           
+      }
       Blink(LED, 50, 3); //blink LED 3 times, 50ms between blinks
     } else {
       Serial.println("Receive failed");
