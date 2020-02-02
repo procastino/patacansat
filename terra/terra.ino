@@ -21,7 +21,13 @@
 #define RFM69_INT     3
 #define RFM69_RST     4
 #define LED           13
-#define PINBOTON      7
+#define PINBOTON      10
+#define PINLED        11
+
+//variabeis para a detección do estado do botón
+int contadorBoton = 0;   // contador de pulsacións
+int estadoBoton = 0;        
+int ultimoEstadoBoton = 0;
 
 // Singleton instance of the radio driver
 RH_RF69 rf69(RFM69_CS, RFM69_INT);
@@ -33,10 +39,14 @@ void setup()
   Serial.begin(115200);
   //while (!Serial) { delay(1); } // wait until serial console is open, remove if not tethered to computer
   pinMode(PINBOTON, INPUT);
+  pinMode(PINLED, OUTPUT);     
   pinMode(LED, OUTPUT);     
   pinMode(RFM69_RST, OUTPUT);
   digitalWrite(RFM69_RST, LOW);
 
+//para que dea tempo a iniciarse o monitor serie antes de empezar a sacar mensaxes
+  delay(3000);
+ 
   Serial.println("Feather RFM69 RX Test!");
   Serial.println();
 
@@ -75,7 +85,31 @@ void setup()
 
 void loop() {
 
-  
+//**** lemos o botón e actualizamos o contador ****//
+//facemos a lectura do botón, unha pulsación cambia de estado
+estadoBoton = digitalRead(PINBOTON);
+
+ // comparamos a ver se cambiou o estado do botón
+  if (estadoBoton != ultimoEstadoBoton) {
+    //se cambiou e foi por premelo
+    if (estadoBoton == HIGH) {
+      contadorBoton++;
+      }
+    // para evitar bounces
+    delay(50);
+  }
+  // o estado último pasa a ser como o estado actual
+  ultimoEstadoBoton = estadoBoton;
+
+  //acendemos ou apagamos o led segundo se a pulsación é impar ou par
+  if (contadorBoton % 2) {
+    digitalWrite(PINLED, HIGH);
+  }
+  else {
+    digitalWrite(PINLED, LOW);
+  }
+
+//**** recepción de mensaxes ****//
  if (rf69.available()) {
     // Should be a message for us now   
     uint8_t buf[RH_RF69_MAX_MESSAGE_LEN];
@@ -89,33 +123,48 @@ void loop() {
       Serial.println((char*)buf);
       Serial.print("RSSI: ");
       Serial.println(rf69.lastRssi(), DEC);
-//aquí emitimos unha mensaxe ou outra dependendo do recibido desde o satélite
-      //se recibimos tempAlarm, envíamos de volta abrir
-      if (strstr((char *)buf, "tempAlarm")) {
-        // Send a reply!
+
+//**** envío de comandos ****//
+//Se o botón ten unha pulsación impar envíamos apertura
+        if (contadorBoton % 2) {
+        //creamos un array data que contén abrir
         uint8_t data[] = "abrir";
+        //envíamos data indicando a súa lonxitude
         rf69.send(data, sizeof(data));
+        //agardamos a que se envíe o paquete
         rf69.waitPacketSent();
-        Serial.println("Sent a reply");
-        Blink(LED, 40, 3); //blink LED 3 times, 40ms between blinks
+        //imprimimos mensaxe de confirmación
+        Serial.println("Enviada orde de apertura");
+        //facemos que o led parpadee
+        Blink(LED, 40, 2); //blink LED 2 times, 40ms between blinks
       }
-      //se recibimos a cadea normal, que inclúe a palabra "pres", enviamos correto
-      else if (strstr((char *)buf, "pres")){
-        // Send a reply!
-        uint8_t data[] = "correto";
+      else {
+        //envíamos cerrar, coa mesma estrutura que antes
+        uint8_t data[] = "cerrar";
         rf69.send(data, sizeof(data));
         rf69.waitPacketSent();
-        Serial.println("Sent a reply");
-        Blink(LED, 40, 3); //blink LED 3 times, 40ms between blinks
-        }
-        //se non recibimos nin unha cousa nin a outra, será que algo non vai ben
-    } else {
+        Serial.println("Enviada orde de peche");
+        Blink(LED, 40, 4); //blink LED 3 times, 40ms between blinks
+      }
+      //esta mensaxe de confirmación non a imos envíar de momento
+//      else if (strstr((char *)buf, "pres")){
+//        // Send a reply!
+//        uint8_t data[] = "correto";
+//        rf69.send(data, sizeof(data));
+//        rf69.waitPacketSent();
+//        Serial.println("Sent a reply");
+//        Blink(LED, 40, 3); //blink LED 3 times, 40ms between blinks
+//        }
+        
+    } 
+    //se non recibimos nada
+    else {
       Serial.println("Receive failed");
     }
   }
 }
 
-
+//función que define o parpadeo
 void Blink(byte PIN
 , byte DELAY_MS, byte loops) {
   for (byte i=0; i<loops; i++)  {

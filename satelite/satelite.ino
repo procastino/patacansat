@@ -20,6 +20,7 @@ double Po=1013.25;
 #define RFM69_INT     3
 #define RFM69_RST     4
 #define LED           13
+#define PINLED        10
 
 // cousas da librería de radio
 RH_RF69 rf69(RFM69_CS, RFM69_INT);
@@ -27,8 +28,12 @@ RH_RF69 rf69(RFM69_CS, RFM69_INT);
 void setup() 
 {
   Serial.begin(115200);
+  //sen este delay non aparecen as mensaxes de inicio, supoño que porque se executan antes de que abra o monitor serie (ou algo así)
+  delay(3000);
+  //definimos como saída o pin do led
+  pinMode(PINLED, OUTPUT);
   
-//codigo de inicio do BMP
+/**** codigo de inicio do BMP ****/
 if (bmp180.begin())
     Serial.println("BMP180 iniciado correctamente");
   else
@@ -42,10 +47,10 @@ if (bmp180.begin())
   Serial.println(status);
   status= bmp180.startPressure(3); //Inicio de lectura de temperatura: devolve o tempo, en milisegundos, que tarda en medir tres veces a presión.
   Serial.println(status); //fin codigo bmp
-  ////////////////////////////////
-  // Código da comunicación de radio, inicio e mensaxes de funcionamento
+
+  /**** Código da comunicación de radio, inicio e mensaxes de funcionamento****/
   
-  pinMode(LED, OUTPUT);     
+  pinMode(LED, OUTPUT);   
   pinMode(RFM69_RST, OUTPUT);
   digitalWrite(RFM69_RST, LOW);
 
@@ -87,9 +92,7 @@ if (bmp180.begin())
 
 void loop() {
   delay(1000);  // Wait 1 second between transmits, could also 'sleep' here!
-//////////
-// código de lectura do BMP 
-//////////
+/*** código de lectura do BMP ***/
   char status; //a variable estatus é dinámica, estase redefinindo continuamente
   double T,P,A;
   status = bmp180.startTemperature();//Inicio de lectura de temperatura
@@ -122,50 +125,48 @@ void loop() {
       }
     }
 
-///////
-////código da emisión de paquetes, aquí está o miolo
-///////
-// creamos o array de 20 caracteres radiopacket, é o mesmo que un string
+/***código da emisión de paquetes***/
+  // creamos o array de 20 caracteres radiopacket, ven a ser o mesmo que un string
   char radiopacket[20];
-
-if ( (int)T > 25){
-  //se a temperatura sube de 25, facemos que radiopacket sexa tempAlarm
-  sprintf(radiopacket, "tempAlarm");
-}
-else {
-  //se está por baixo de 25, deixamos que sega a emitir os datos
+  //formateamos un string que se chama radiopacket, e que substitúe os datos con % polas variables
   sprintf(radiopacket,"temp. %d, pres. %d",(int)T,(int)P); 
-}
-
-//mensaxe de emisión 
+  //mensaxe de emisión 
   Serial.print("Sending "); Serial.println(radiopacket);
 
   //Enviamos a mensaxe cunha instrución da librería. Non nos importa moito, só que envía "radiopacket"
   rf69.send((uint8_t *)radiopacket, strlen(radiopacket));
   rf69.waitPacketSent();
 
-  // Now wait for a reply
+/*** código da recepción de paquetes desde terra ***/
   uint8_t buf[RH_RF69_MAX_MESSAGE_LEN];
   uint8_t len = sizeof(buf);
 
-// esperamos por unha mensaxe de volta de terra
+  // esperamos por unha mensaxe de volta de terra
   if (rf69.waitAvailableTimeout(500))  { 
-    // Should be a reply message for us now   
+    // Miramos a ver se se recibiu unha mensaxe con contido   
     if (rf69.recv(buf, &len)) {
       buf[len] = '\0';
       Serial.print("Got a reply: ");
       Serial.println((char*)buf);
-
+      //con esta instrucción buscamos se hai algunha ocurrencia de "abrir" no char buf
       if (strstr((char *)buf, "abrir")) {
-        
         Serial.println("abrindo porta");
-                 
+        digitalWrite(PINLED, HIGH);       
       }
+      //se non a hai, será que recibimos cerrar e cerramos
+      else {
+        Serial.println("cerrando porta");
+        digitalWrite(PINLED, LOW);
+        }
       Blink(LED, 50, 3); //blink LED 3 times, 50ms between blinks
-    } else {
+    } 
+    //se non se recibiu nada
+    else {
       Serial.println("Receive failed");
     }
-  } else {
+  } 
+  //se non había ningunha resposta
+  else {
     Serial.println("No reply, is another RFM69 listening?");
   }
 }
