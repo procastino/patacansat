@@ -15,7 +15,7 @@ double Po=1013.25;
 // establecemos frecuencia de comunicación a 434 MHZ
 // pódese poñer outra?
 #define RF69_FREQ 434.0
-
+//establecemos pins para as funcións da radio e led
 #define RFM69_CS      8
 #define RFM69_INT     3
 #define RFM69_RST     4
@@ -91,6 +91,7 @@ if (bmp180.begin())
 
 
 void loop() {
+//pídennos as medicións cada segundo, así que paramos un segundo antes de facer nada (revisar ben o tempo)
   delay(1000);  // Wait 1 second between transmits, could also 'sleep' here!
 /*** código de lectura do BMP ***/
   char status; //a variable estatus é dinámica, estase redefinindo continuamente

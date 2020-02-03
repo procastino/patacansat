@@ -16,7 +16,7 @@
 // Change to 434.0 or other frequency, must match RX's freq!
 #define RF69_FREQ 434.0
 
-
+//definimos pins para radio e outras funcións
 #define RFM69_CS      8
 #define RFM69_INT     3
 #define RFM69_RST     4
