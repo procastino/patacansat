@@ -9,6 +9,9 @@
 //Creamos obxecto bmp180 
 SFE_BMP180 bmp180;
 double Po=1013.25;
+double altitudeBase = 200.00;
+double altitudeSubida = altitudeBase + 200;
+double altitudeBaixada = altitudeBase + 10;
 
 /************ Radio Setup ***************/
 
@@ -21,6 +24,10 @@ double Po=1013.25;
 #define RFM69_RST     4
 #define LED           13
 #define PINLED        10
+#define PINBUZZER     9
+
+//flag para saber se xa pasamos pola ascensión para a baliza sonora
+boolean xaSubiches = false;
 
 // cousas da librería de radio
 RH_RF69 rf69(RFM69_CS, RFM69_INT);
@@ -91,8 +98,6 @@ if (bmp180.begin())
 
 
 void loop() {
-//pídennos as medicións cada segundo, así que paramos un segundo antes de facer nada (revisar ben o tempo)
-  delay(1000);  // Wait 1 second between transmits, could also 'sleep' here!
 /*** código de lectura do BMP ***/
   char status; //a variable estatus é dinámica, estase redefinindo continuamente
   double T,P,A;
@@ -127,6 +132,25 @@ void loop() {
     }
 
 /***código da emisión de paquetes***/
+//comprobamos se o satélite xa subiu da altura definida
+if (A > altitudeSubida){
+  xaSubiches = true;
+}
+//se xa subiu e está por debaixo da altitude de baixada
+if (A < altitudeBaixada && xaSubiches) {
+  //facemos soar o buzzer tres veces
+  for (int i = 0; i < 3; i++){
+    digitalWrite(PINBUZZER, HIGH);
+    delay(250);
+    digitalWrite(PINBUZZER, LOW);
+    delay(80);
+  }
+  
+}
+//en caso contrario, esperamos un segundo entre medicións
+else {
+  delay(1000);  
+}
   // creamos o array de 20 caracteres radiopacket, ven a ser o mesmo que un string
   char radiopacket[20];
   //formateamos un string que se chama radiopacket, e que substitúe os datos con % polas variables
