@@ -94,6 +94,7 @@ estadoBoton = digitalRead(PINBOTON);
     //se cambiou e foi por premelo
     if (estadoBoton == HIGH) {
       contadorBoton++;
+      Serial.println("pulsado");
       }
     // para evitar bounces
     delay(50);
@@ -162,6 +163,10 @@ estadoBoton = digitalRead(PINBOTON);
       Serial.println("Receive failed");
     }
   }
+//  else {
+//    Serial.println("Non hai RFM69 dispoñible");
+//    delay(500);
+//  }
 }
 
 //función que define o parpadeo
