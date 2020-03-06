@@ -20,9 +20,10 @@ translate([16*2.54,-6*2.54,0]) cylinder(r=1.5, h=10, $fn=20);
 
 }
 
-translate([2.54*3,-5,0]) separadores();
+translate([2.54*3+2,-5,0]) separadores();
 
 module separadores(){
-cube([2.54,2.54*5,6]);
-translate([26+2.54,0,0]) cube([2.54,2.54*5,6]);
+cube([1.54,2.54*5,6]);
+translate([26+1.54,0,0]) cube([1.54,2.54*5,6]);
 }
+translate([6*2.54,8.5*2.54,0]) cube([2.54*6,2.9,5]);
