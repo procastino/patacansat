@@ -7,8 +7,40 @@ rR = 6;
 //altura do depósito
 hTotal=30;
 
-caixa();
-translate([rE*2.5,0,0]) tapa();
+//translate([-2.54*9.5,0,0]) rotate ([180,0,0])
+base();
+//rotate([0,0,300]) caixa();
+//translate([rE*2.5,0,0]) tapa();
+module base(){
+//base
+difference(){
+//base e borde
+translate([2.54*9.5,0,0]) cylinder(r=23*2.54/2,h=3,$fn=6);
+translate([2.54*9.5,0,eB]) cylinder(r=22*2.54/2,h=6,$fn=6);
+//furados e recorte da beira
+//furado so
+cylinder(r=1.5, h=10, $fn=20);
+translate([0,0,eB]) cylinder(r=rR, h=10, $fn=6);
+//furado
+translate([16*2.54,6*2.54,0]) cylinder(r=1.5, h=10, $fn=20);
+translate([16*2.54,6*2.54,eB]) cylinder(r=rR, h=10, $fn=6);
+//furado
+translate([16*2.54,-6*2.54,eB]) cylinder(r=rR, h=10, $fn=6);
+translate([16*2.54,-6*2.54,0]) cylinder(r=1.5, h=10, $fn=20);
+//e os furados para enganchar a caixa
+    translate([2.54*9.5,0,0]) rotate([0,0,60]) furados();
+//furados para pasar o fío, van un de máis porque non sabemos por onde vai quedar
+    union(){
+    translate([2.54*2,0,0]) cylinder(r=0.6, h=eB*2,$fn=10);
+    translate([2.54*19,0,0]) cylinder(r=0.6, h=eB*2,$fn=10);
+     translate([2.54*4,2.54*7,0]) cylinder(r=0.6, h=eB*2,$fn=10);
+    translate([2.54*14,2.54*7,0]) cylinder(r=0.6, h=eB*2,$fn=10);
+     translate([2.54*4,-2.54*7,0]) cylinder(r=0.6, h=eB*2,$fn=10);
+    translate([2.54*14,-2.54*7,0]) cylinder(r=0.6, h=eB*2,$fn=10);
+    }
+
+}
+}
 
 module tapa(){
 cylinder(r=rE,h=eB,$fn=6);
