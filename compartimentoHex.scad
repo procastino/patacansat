@@ -6,11 +6,17 @@ eB = 2;
 rR = 6;
 //altura do depósito
 hTotal=30;
-
+//radio furados pequenos
+rFP=0.8;
+//este translate para ver o conxunto
 //translate([-2.54*9.5,0,0]) rotate ([180,0,0])
 base();
-//rotate([0,0,300]) caixa();
-//translate([rE*2.5,0,0]) tapa();
+//este rotate para ver o conxunto
+//rotate([0,0,300]) 
+//caixa();
+//este translate para ver o conxunto
+//translate([rE*2.5,0,0])
+//tapa();
 module base(){
 //base
 difference(){
@@ -31,12 +37,12 @@ translate([16*2.54,-6*2.54,0]) cylinder(r=1.5, h=10, $fn=20);
     translate([2.54*9.5,0,0]) rotate([0,0,60]) furados();
 //furados para pasar o fío, van un de máis porque non sabemos por onde vai quedar
     union(){
-    translate([2.54*2,0,0]) cylinder(r=0.6, h=eB*2,$fn=10);
-    translate([2.54*19,0,0]) cylinder(r=0.6, h=eB*2,$fn=10);
-     translate([2.54*4,2.54*7,0]) cylinder(r=0.6, h=eB*2,$fn=10);
-    translate([2.54*14,2.54*7,0]) cylinder(r=0.6, h=eB*2,$fn=10);
-     translate([2.54*4,-2.54*7,0]) cylinder(r=0.6, h=eB*2,$fn=10);
-    translate([2.54*14,-2.54*7,0]) cylinder(r=0.6, h=eB*2,$fn=10);
+    translate([2.54*2,2.54*4,0]) cylinder(r=rFP, h=eB*2,$fn=10);
+    translate([2.54*19,0,0]) cylinder(r=rFP, h=eB*2,$fn=10);
+     translate([2.54*4,2.54*7,0]) cylinder(r=rFP, h=eB*2,$fn=10);
+    translate([2.54*14,2.54*7,0]) cylinder(r=rFP, h=eB*2,$fn=10);
+     translate([2.54*4,-2.54*7,0]) cylinder(r=rFP, h=eB*2,$fn=10);
+    translate([2.54*14,-2.54*7,0]) cylinder(r=rFP, h=eB*2,$fn=10);
     }
 
 }
@@ -44,7 +50,7 @@ translate([16*2.54,-6*2.54,0]) cylinder(r=1.5, h=10, $fn=20);
 
 module tapa(){
 cylinder(r=rE,h=eB,$fn=6);
-cylinder(r=rE-2.84/2,h=eB*2,$fn=6); //reborde da tapa máis pequeno que o oco para que encaixe
+cylinder(r=rE-1.6,h=eB*2,$fn=6); //reborde da tapa máis pequeno que o oco para que encaixe
 //saínte para enganchar o fío de suxección
 difference(){
 translate([rE-2,-4,0]) rotate([0,0,30]) cylinder(r=2,h=eB,$fn=6);
@@ -60,15 +66,15 @@ union(){
 //exterior
 cylinder(r=rE,h=hTotal,$fn=6);
 //asas
-translate([8,-5,hTotal/5])rotate([0,15,0])  cube([10,10,25]);
-translate([-18,-5,hTotal/5-2.5])  rotate([0,345,0])cube([10,10,25]);
+translate([9,-5,hTotal/5])rotate([0,15,0])  cube([10,10,25]);
+translate([-19,-5,hTotal/5-2.5])  rotate([0,345,0])cube([10,10,25]);
     }
 //hexagono interior
 translate([0,0,2])cylinder(r=rE-2.54/2,h=hTotal+10,$fn=6);
 //furados das orellas
-translate([rE+0.8,0,0]) cylinder(r=0.6,h=hTotal+10,$fn=6);
-translate([rE+0.8,-3,0]) cylinder(r=0.6,h=hTotal+10,$fn=6);
-translate([-rE-0.8,0,0]) cylinder(r=0.6,h=hTotal+10,$fn=6);
+translate([rE+1.5,0,0]) cylinder(r=0.8,h=hTotal+10,$fn=6);
+translate([rE+0.8,-3,0]) cylinder(r=0.8,h=hTotal+10,$fn=6);
+translate([-rE-1.5,0,0]) cylinder(r=0.8,h=hTotal+10,$fn=6);
 
 furados();
 }
